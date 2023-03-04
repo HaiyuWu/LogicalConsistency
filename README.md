@@ -97,6 +97,7 @@ and put models to ./weights.
 | ---- | ---- | ---- | ---- |
 | ResNet50     |   89.89   |  92.65    |  70.23  |
 | SE-ResNeXt     |  89.71    |   92.31   | 71.33   |
+
 This project evaluate the model in two aspects - ***Accuracy*** and ***Logical consistency***.
 
 ### Accuracy
