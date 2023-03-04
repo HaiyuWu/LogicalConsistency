@@ -7,7 +7,7 @@
 </figure>
 
 ## TL;DR
-This repository provides a facial hair dataset, FH37K, which describes the facial hair in Area, Length, Connectedness dimensions. In addition, a method that can force the model to make predictions logically. See details below.
+This repository provides a facial hair dataset, FH37K, which describes the facial hair in Area, Length, Connectedness dimensions. In addition, a method that can force the model to make predictions logical. See details below.
 
 ## Table of contents
 
