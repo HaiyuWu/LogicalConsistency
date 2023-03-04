@@ -1,9 +1,5 @@
 import argparse
-import numpy as np
-import os.path as path
-import os
 from tqdm import tqdm
-import torch
 
 
 def main(file_path,

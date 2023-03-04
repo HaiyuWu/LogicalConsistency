@@ -22,7 +22,6 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
 - [Testing](#testing)
   * [Accuracy](#Accuracy)
   * [Logical Consistency](#logical-consistency)
-- [Credit](#Credit)
 <!--te-->
 
 ## Paper details
@@ -110,8 +109,13 @@ the first 30,000 (0_0_0000000 to 0_0_0029999) identities in WebFace260M
 ``` 
 python file_path_extractor.py -s /path/to/webface00/folder -d . -end_with jpg
 ```
-Once the image paths have been collect in a .txt file, edit the [image_file_test.sh](./image_file_test.sh) and run
-the bash script to save the predictions
+The next step is dropping the images that are in the FH37K dataset. 
+``` 
+python Scripts/remove_duplicates.py -i raw/image/path/file
+```
+
+Once the image paths have been collected in a .txt file and the duplicate image paths are dropped, 
+edit the [image_file_test.sh](./image_file_test.sh) and run the bash script to save the predictions
 ``` 
 bash image_file_test.sh
 ```
@@ -119,5 +123,3 @@ After getting the predictions, calculating the fail rate with the logical consis
 ``` 
 python Scripts/check_impossible_ratio.py -bt /your/prediction/file
 ```
-## Credit
-TODO
