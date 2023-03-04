@@ -15,8 +15,6 @@ def main(file_path,
           f"Threshold: {thr}\n")
     saved_im_paths = {}
     print("Start confidence collection...")
-    loss_function = "BCE"
-    # loss_function = file_path.split("/")[-1].split("_")[0]
     file_name = file_path.split("/")[-1]
     with open(file_path, "r") as f:
         for line in tqdm(f.readlines()):
@@ -24,7 +22,7 @@ def main(file_path,
             im_path, confidences = line.strip().split("\t")
             for confidence in confidences[1:-1].split(","):
                 temp_confidences.append(float(confidence))
-            labels = binary_convertor(temp_confidences, thr, loss_function, compensate)
+            labels = binary_convertor(temp_confidences, thr, compensate)
             saved_im_paths[im_path] = labels.astype(np.int8)
     print("Start writing...")
     _create_dir(save_folder)
@@ -39,25 +37,11 @@ def main(file_path,
     print(f"Results have been written to {result_file_path}")
 
 
-def binary_convertor(confidences, thr, loss_function, compensate):
-    out_index = [[0, 1, 2],
-                 [4, 5, 6, 7],
-                 [9, 10, 11, 12],
-                 [13, 14, 15, 16],
-                 [17, 18, 19, 20, 21],
-                 [3, 8]]
+def binary_convertor(confidences, thr, compensate):
     confidences = np.array(confidences)
     if compensate:
         return _check_incomplete(confidences, thr)
     return confidences > thr
-    # elif loss_function == "MIE":
-    #     predicted = np.zeros(confidences.shape)
-    #     for indexes in out_index[:-1]:
-    #         temp_array = predicted[indexes]
-    #         temp_array[np.argmax(confidences[indexes])] += 1
-    #         predicted[indexes] = temp_array
-    #     predicted[out_index[-1]] = (confidences[out_index[-1]] > 0.5)
-    #     return predicted
 
 
 def _check_incomplete(confidences, thr):

@@ -114,12 +114,25 @@ The next step is dropping the images that are in the FH37K dataset.
 python Scripts/remove_duplicates.py -i raw/image/path/file
 ```
 
-Once the image paths have been collected in a .txt file and the duplicate image paths are dropped, 
-edit the [image_file_test.sh](./image_file_test.sh) and run the bash script to save the predictions
+Once the image paths have been collected in a .txt file and the duplicate image paths are dropped, there are two ways to 
+do the prediction binarization. 
+
+1. Edit the paths in [image_file_test.sh](./image_file_test.sh) and run the bash script to save the predictions
 ``` 
 bash image_file_test.sh
 ```
-After getting the predictions, calculating the fail rate with the logical consistency checked
+2. Edit the paths in [image_file_test.sh](./image_file_test.sh), replace ```-lc``` with ```-rc``` to save the raw confidences.
+This process provides a flexibility to use confidence for image selection.
+```
+bash image_file_test.sh
+```
+Then convert the raw confidences to binary predictions and save it in another file
+``` 
+python Scripts/rc2binary.py -rf /path/to/confidence/file -sf /path/to/destination  -o file_name
+```
+*Tip: adding ```-c``` to enable label compensation strategy.*
+
+After getting the binarized predictions, calculating the fail rate with the logical consistency checked
 ``` 
 python Scripts/check_impossible_ratio.py -bt /your/prediction/file
 ```

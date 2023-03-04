@@ -15,11 +15,11 @@ def main(file_path,
         for line in tqdm(f.readlines()):
             temp_confidences = []
             im_path, confidences = line.strip().split("\t")
-            try:
-                for confidence in confidences.split(","):
-                    temp_confidences.append(int(confidence))
-            except Exception:
+            if "[" in confidences:
                 for confidence in confidences[1:-1].split(","):
+                    temp_confidences.append(int(confidence))
+            else:
+                for confidence in confidences.split(","):
                     temp_confidences.append(int(confidence))
             total_number += 1
             failed_number, incomplete_number, impossible_number = condition_checking(temp_confidences)

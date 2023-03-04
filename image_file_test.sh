@@ -15,4 +15,5 @@ python test_pred.py \
 -s \
 -vr ${save_folder} \
 -mn ${model_name} \
--ipf ${image_path_file}
+-ipf ${image_path_file} \
+-lc
