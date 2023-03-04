@@ -1,8 +1,6 @@
 # Logical-Consistency-and-Greater-Descriptive-Power-for-Facial-Hair-Attribute-Learning
 ## Paper accepted to the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) 2023
 
-Arxiv link: https://arxiv.org/pdf/2302.11102.pdf
-
 <figure>
   <img src="./teaser.png" style="width:100%">
   <figcaption>Figure 1: We provide richer descriptions on facial hair that covers Beard Area, Beard Length, Mustache, Sideburns, and Bald. We first consider the logical consistency of the predictions for multi-label classification task.</figcaption>
