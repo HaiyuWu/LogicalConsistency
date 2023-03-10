@@ -15,6 +15,7 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
 - [Paper details](#paper-details)
   * [Abstract](#abstract)
   * [Citation](#citation)
+  * [Definition](#definition)
 - [Installation](#installation)
 - [Training](#training)
   * [Prepare FH37K dataset](#prepare-fh37k-dataset)
@@ -29,6 +30,9 @@ Haiyu Wu, Grace Bezold, Aman Bhatta, [Kevin W. Bowyer](https://www3.nd.edu/~kwb/
 
 ### Abstract
 > Face attribute research has so far used only simple binary attributes for facial hair; e.g., beard / no beard. We have created a new, more descriptive facial hair annotation scheme and applied it to create a new facial hair attribute dataset, FH37K. Face attribute research also so far has not dealt with logical consistency and completeness. For example, in prior research, an image might be classified as both having no beard and also having a goatee (a type of beard). We show that the test accuracy of previous classification methods on facial hair attribute classification drops significantly if logical consistency of classifications is enforced. We propose a logically consistent prediction loss, LCPLoss, to aid learning of logical consistency across attributes, and also a label compensation training strategy to eliminate the problem of no positive prediction across a set of related attributes. Using an attribute classifier trained on FH37K, we investigate how facial hair affects face recognition accuracy, including variation across demographics. Results show that similarity and difference in facial hairstyle have important effects on the impostor and genuine score distributions in face recognition.
+
+### Definition
+The definition and examples of each attribute can be found in [Google Document](https://docs.google.com/document/d/1My0catzzRc5wzxIo2-ozDaDuZrv3Z_wG/edit#).
 
 ### Citation
 If you use any part of our code or data, please cite our paper.
