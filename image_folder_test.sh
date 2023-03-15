@@ -8,8 +8,8 @@ test_model_path="weights/model_resnet50.pth"
 save_folder="./val_result/fh37k_BCE_reg_pretrained/test"
 
 python test_pred.py \
--tip ${image_folder} \
--tlf ${ground_truth_label} \
+-i ${image_folder} \
+-l ${ground_truth_label} \
 -bs ${batch_size} \
 -mn ${model_name} \
 -tm ${test_model_path} \
@@ -18,3 +18,4 @@ python test_pred.py \
 -pna \
 -lc \
 -id
+
