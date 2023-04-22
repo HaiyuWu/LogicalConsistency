@@ -1,6 +1,7 @@
 # Logical-Consistency-and-Greater-Descriptive-Power-for-Facial-Hair-Attribute-Learning
 ## Paper accepted to the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) 2023
 
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 <figure>
   <img src="./teaser.png" style="width:100%">
   <figcaption>Figure 1: We provide richer descriptions on facial hair that covers Beard Area, Beard Length, Mustache, Sideburns, and Bald. We first consider the logical consistency of the predictions for multi-label classification task.</figcaption>
@@ -15,6 +16,7 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
 - [Paper details](#paper-details)
   * [Abstract](#abstract)
   * [Citation](#citation)
+  * [Credit](#credit)
   * [Attribute Definition](#attribute-definition)
   * [Bias Aware test set](#bias-aware-test-set)
 - [Installation](#installation)
@@ -24,6 +26,7 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
 - [Testing](#testing)
   * [Accuracy](#Accuracy)
   * [Logical Consistency](#logical-consistency)
+- [License](#license)
 <!--te-->
 
 ## Paper details
@@ -39,13 +42,23 @@ The definition and examples of each attribute can be found in [Google Document](
 The BA-test dataset used in the demographic face recognition accuracy disparity analyses part in the paper will be available soon.
 
 ### Citation
-If you use any part of our code or data, please cite our paper.
+If you use any part of our code or model, please cite our paper.
 ```
 @article{wu2023logical,
   title={Logical Consistency and Greater Descriptive Power for Facial Hair Attribute Learning},
   author={Wu, Haiyu and Bezold, Grace and Bhatta, Aman and Bowyer, Kevin W},
   journal={arXiv preprint arXiv:2302.11102},
   year={2023}
+}
+```
+### Credit
+If you use the FH37K dataset, please **ALSO** cite WebFace260M.
+```
+@inproceedings {zhu2021webface260m,
+  title=  {WebFace260M: A Benchmark Unveiling the Power of Million-scale Deep Face Recognition},
+  author=  {Zheng Zhu, Guan Huang, Jiankang Deng, Yun Ye, Junjie Huang, Xinze Chen, Jiagang Zhu, Tian Yang, Jiwen Lu, Dalong Du, Jie Zhou},
+  booktitle=  {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year=  {2021}              
 }
 ```
 
@@ -59,16 +72,15 @@ pip install -r requirements.txt
 
 ## Training
 ### Prepare FH37K dataset
-Since we have not gotten the permission to distribute the images from the original image sources, 
-you need to download the dataset from [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
-and [WebFace260M](https://www.face-benchmark.org/) (only the first 30000 identities in subfolder 0 needed). For
-your convenience, you can collect FH37 by running
+Since we have not gotten the permission to distribute the images from CelebA, 
+you need to download the ***cropped and aligned*** dataset from [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html). **The WebFace260M portion is available now!**, you can download it from [Drive](https://drive.google.com/drive/folders/17VKdbEE2iCwxCTdsUucCne762t2h01VV?usp=sharing). 
+Since it has been separated to train/val/test, you can use the downloaded folder as the destination to run the following code to collect the rest of FH37k.
 ```
 python fh37k_collection.py \
--web00 /path/to/webface00/folder \
 -celeba /path/to/celeba/folder \
 -pf ./FH37K/label_partition.csv \
 -lf ./FH37K/facial_hair_annotations.csv
+-d path/to/webface/portion/folder
 ```
 After you have the FH37K dataset, using the [image2lmdb.py](./utils/image2lmdb.py) to generate a LMDB dataset (train and val).
 ```
@@ -111,19 +123,13 @@ To evaluate the accuracy on test set, simply edit the bash script [image_folder_
 bash image_folder_test.sh
 ```
 ### Logical Consistency
-To evaluate the logical consistency in the real-world simulation,
-first run [file_path_extractor.py](./file_path_extractor.py) to collect the image paths of
-the first 30,000 (0_0_0000000 to 0_0_0029999) identities in WebFace260M
+To evaluate the logical consistency in the real-world simulation, you can download the test set from [Drive](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing). 
+After you have this test set, run [file_path_extractor.py](./file_path_extractor.py) to collect the image paths.
 ``` 
 python file_path_extractor.py -s /path/to/webface00/folder -d . -end_with jpg
 ```
-The next step is dropping the images that are in the FH37K dataset. 
-``` 
-python Scripts/remove_duplicates.py -i raw/image/path/file
-```
 
-Once the image paths have been collected in a .txt file and the duplicate image paths are dropped, there are two ways to 
-do the prediction binarization. 
+Once the image paths have been collected in a .txt file, there are two ways to do the prediction binarization. 
 
 1. Edit the paths in [image_file_test.sh](./image_file_test.sh) and run the bash script to save the predictions
 ``` 
@@ -144,3 +150,6 @@ After getting the binarized predictions, calculating the fail rate with the logi
 ``` 
 python Scripts/check_impossible_ratio.py -bt /your/prediction/file
 ```
+
+## License
+Check [license](./license.md) for license details.
