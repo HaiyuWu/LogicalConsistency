@@ -27,7 +27,7 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
   * [Accuracy](#Accuracy)
   * [Logical Consistency](#logical-consistency)
 - [License](#license)
-<!--te-->
+  <!--te-->
 
 ## Paper details
 [Haiyu Wu](https://haiyuwu.netlify.app/), Grace Bezold, Aman Bhatta, [Kevin W. Bowyer](https://www3.nd.edu/~kwb/), "*Logical Consistency and Greater Descriptive Power for Facial Hair Attribute Learning*", CVPR, 2023, [arXiv:2302.11102](https://arxiv.org/abs/2302.11102)
@@ -110,10 +110,10 @@ python -u train_with_lmdb.py \
 To evaluate with the pretrained model, download the model from [Model Zoo](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing),
 and put models to ./weights. 
 
-| models    |  Overall    |   Negative   |  Positive |
-| ---- | ---- | ---- | ---- |
-| ResNet50     |   89.89   |  92.65    |  70.23  |
-| SE-ResNeXt     |  89.71    |   92.31   | 71.33   |
+| models     | Overall | Negative | Positive |
+| ---------- | ------- | -------- | -------- |
+| ResNet50   | 89.89   | 92.65    | 70.23    |
+| SE-ResNeXt | 89.71   | 92.31    | 71.33    |
 
 This project evaluate the model in two aspects - ***Accuracy*** and ***Logical consistency***.
 
@@ -123,7 +123,7 @@ To evaluate the accuracy on test set, simply edit the bash script [image_folder_
 bash image_folder_test.sh
 ```
 ### Logical Consistency
-To evaluate the logical consistency in the real-world simulation, you can download the test set from [Drive](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing). 
+To evaluate the logical consistency in the real-world evaluation, you can download the test set from [Drive](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing). 
 After you have this test set, run [file_path_extractor.py](./file_path_extractor.py) to collect the image paths.
 ``` 
 python file_path_extractor.py -s /path/to/webface00/folder -d . -end_with jpg
@@ -136,7 +136,7 @@ Once the image paths have been collected in a .txt file, there are two ways to d
 bash image_file_test.sh
 ```
 2. Edit the paths in [image_file_test.sh](./image_file_test.sh), replace ```-lc``` with ```-rc``` to save the raw confidences.
-This process provides a flexibility to use confidence for image selection.
+  This process provides a flexibility to use confidence for image selection.
 ```
 bash image_file_test.sh
 ```
