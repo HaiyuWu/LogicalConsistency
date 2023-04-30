@@ -123,10 +123,10 @@ To evaluate the accuracy on test set, simply edit the bash script [image_folder_
 bash image_folder_test.sh
 ```
 ### Logical Consistency
-To evaluate the logical consistency in the real-world evaluation, you can download the test set from [Drive](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing). 
+To evaluate the logical consistency in the real-world, you can download the test set from [Drive](https://drive.google.com/drive/folders/1ttUaN3kOHJ9GYLz0nQd19hDOIm9AHeTO?usp=sharing). 
 After you have this test set, run [file_path_extractor.py](./file_path_extractor.py) to collect the image paths.
 ``` 
-python file_path_extractor.py -s /path/to/webface00/folder -d . -end_with jpg
+python file_path_extractor.py -s /path/to/extracted/folder -d . -end_with jpg
 ```
 
 Once the image paths have been collected in a .txt file, there are two ways to do the prediction binarization. 
