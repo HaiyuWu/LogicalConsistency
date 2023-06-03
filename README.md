@@ -44,10 +44,11 @@ The BA-test dataset used in the demographic face recognition accuracy disparity 
 ### Citation
 If you use any part of our code or model, please cite our paper.
 ```
-@article{wu2023logical,
+@inproceedings{wu2023logical,
   title={Logical Consistency and Greater Descriptive Power for Facial Hair Attribute Learning},
   author={Wu, Haiyu and Bezold, Grace and Bhatta, Aman and Bowyer, Kevin W},
-  journal={arXiv preprint arXiv:2302.11102},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={8588--8597},
   year={2023}
 }
 ```
