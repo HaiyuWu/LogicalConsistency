@@ -39,7 +39,7 @@ This repository provides a facial hair dataset, FH37K, which describes the facia
 The definition and examples of each attribute can be found in [Google Document](https://docs.google.com/document/d/1My0catzzRc5wzxIo2-ozDaDuZrv3Z_wG/edit#).
 
 ### Bias Aware test set
-The BA-test dataset used in the demographic face recognition accuracy disparity analyses part in the paper will be available soon.
+The [BA-test](https://github.com/HaiyuWu/BA-test-dataset) dataset used in the demographic face recognition accuracy disparity analyses part is available now. However, note that this is the cleaner and more controlled version, so that the reproduced results should have slight difference, but it does not change the observations.
 
 ### Citation
 If you use any part of our code or model, please cite our paper.
