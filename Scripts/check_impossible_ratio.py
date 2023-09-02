@@ -48,7 +48,7 @@ def condition_checking(confidences):
     # 1. Clean Shaven + Beard length (5 o clock shadow, short, median, long)
     # 2. Clean Shaven + Mustache is connected to beard
     # 3. Clean Shaven + Sideburns is connected to beard
-    # 4. China area + Sideburns is connected to beard
+    # 4. Chin area + Sideburns is connected to beard
     # 5. Bald (top and sides or sides only) + having sideburns (Sideburns present, Sideburns is connected to beard)
     # 6. More than two choices on Mustache, Sideburns, and Bald
     # 7. More than two choices on Beard area and Beard length except Info not Vis
