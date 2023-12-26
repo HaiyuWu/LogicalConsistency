@@ -3,6 +3,7 @@ from models.model_wrapper import ModelWrapper
 import torch
 import pandas as pd
 import argparse
+import torch.nn as nn
 from tqdm import tqdm
 from os import path
 from lmdb_dataloader.test_loader import TestDataLoader
@@ -32,7 +33,13 @@ class Config(EasyDict):
         self.im_paths_file = args.im_paths_file
         self.pre_trained = False
         self.workers = 16
-        self.num_out = 22
+        self.dataset = args.dataset
+        if self.dataset == "celeba":
+            self.in_channel = 2048
+            self.num_out = 40
+        else:
+            self.in_channel = 2048
+            self.num_out = 22
         self.pin_memory = True
         self.impossible_detection = args.impossible_detection
         self.folder_paths_file = args.folder_paths_file
@@ -59,32 +66,34 @@ class Test:
         # loading dataset
         print("Loading datasets...")
         self.config = config
-
+        self.sigmoid = nn.Sigmoid()
         print(config)
 
         self.o_file = "output"
         self.test_loader = TestDataLoader(self.config)
 
         if self.config.whole_model:
-            self.model = torch.load(self.config.test_model, map_location="cuda:0")
+            self.cls_model = torch.load(self.config.test_model, map_location="cuda:0")
         elif self.config.static:
             print(f"Model will use {torch.cuda.device_count()} GPUs!")
             if not self.config.model:
                 raise AssertionError("Please enter the name of the aim model (MOON, AFFACT, resnet50, densenet121)")
-            self.model = ModelWrapper(self.config)
+            self.cls_model = ModelWrapper(self.config)
+
             try:
-                self.model.load_state_dict(torch.load(self.config.test_model))
+                self.cls_model.load_state_dict(torch.load(self.config.test_model))
             except Exception:
-                self.model = DataParallel(self.model)
-                self.model.load_state_dict(torch.load(self.config.test_model, map_location=torch.device('cpu')))
+                self.cls_model = DataParallel(self.cls_model)
+                self.cls_model.load_state_dict(torch.load(self.config.test_model, map_location=torch.device('cpu')))
         else:
             raise AssertionError("Please enter the type of model weights: --whole_model or --static")
 
-        self.model.to(self.config.device)
-        self.model.eval()
+        self.cls_model.to(self.config.device)
+        self.cls_model.eval()
+
         if self.config.output:
             self.o_file = self.config.output
-
+        self.failed = 0
         self.total = 0
         self.p_total, self.n_total = torch.tensor([0] * self.config.num_out).to(self.config.device), \
                                      torch.tensor([0] * self.config.num_out).to(self.config.device)
@@ -98,11 +107,13 @@ class Test:
         with torch.no_grad():
             for j, (images, im_paths, labels) in enumerate(tqdm(self.test_loader), 0):
                 images = images.to(self.config.device)
-                prediction = self.model(images)
+                prediction = self.cls_model(images)
+                prediction = torch.sigmoid(prediction)
                 if self.config.label_compensation:
                     predicted = self._check_incomplete(prediction)
                 else:
-                    predicted = (prediction.data > 0.5)
+                    predicted = (prediction > 0.5)
+
                 for raw_data, label, im_path in zip(prediction, predicted, im_paths):
                     logger[im_path] = [raw_data, label.int()]
                 if self.config.test_label_file:
@@ -123,9 +134,16 @@ class Test:
                                      self.correct_p,
                                      self.p_total)
             else:
-                print(f"Accuracy -- {torch.mean(self.correct / self.total)} -- {self.total} samples")
-                print(f"Acc on positive samples: {self.correct_p / self.p_total} -- {self.p_total} samples")
-                print(f"Acc on negative samples: {self.correct_n / self.n_total} -- {self.n_total} samples")
+                p_acc = self.correct_p / self.p_total
+                n_acc = self.correct_n / self.n_total
+                avg_acc = (p_acc + n_acc)/2
+                print(f"Accuracy -- {torch.mean(avg_acc)} -- {self.total} samples")
+                print(f"Positive acc -- {torch.mean(p_acc)}       Negative acc -- {torch.mean(n_acc)}")
+                print(f"Acc on positive samples: {p_acc} -- {self.p_total} samples")
+                print(f"Acc on negative samples: {n_acc} -- {self.n_total} samples")
+                print(avg_acc[([0, 4, 5, 16, 20, 22, 24, 28, 35])])
+                print(torch.mean(avg_acc[([0, 4, 5, 16, 20, 22, 24, 28, 35])]))
+                print(self.failed / self.total)
 
         if not self.config.test_label_file or self.config.output:
             result_file = f"{os.path.join(self.config.val_result, self.o_file)}.txt"
@@ -140,7 +158,10 @@ class Test:
     def correct_counter(self, index, person, predicted_label, ground_truth, impossible_detection):
         flag = False
         if impossible_detection:
-            flag = self.condition_checking(predicted_label[index])
+            flag = self.condition_checking(predicted_label[index], self.config.dataset)
+
+        self.failed += flag
+
         p_pos = torch.where(person == 1)[0]
         if not flag:
             for pos in p_pos:
@@ -150,41 +171,56 @@ class Test:
                     self.correct_n[pos] += 1
             self.correct += person
 
-    def condition_checking(self, confidences):
-        length = self.config.group_head_tail_indexes
+    def condition_checking(self, confidences, dataset):
+        if dataset != "celeba":
+            length = self.config.group_head_tail_indexes
 
-        # incomplete cases
-        # 1. no results in Beard area, Mustache, Sideburns, or Bald
-        # 2. not clean shaven but no results in Beard length
-        if sum(confidences[length[0]:length[1]]) == 0 or sum(confidences[length[2]:length[3]]) == 0 \
-                or sum(confidences[length[3]:length[4]]) == 0 or sum(confidences[length[4]:length[5]]) == 0 \
-                or (sum(confidences[length[1]:length[2]]) == 0 and confidences[0] == 0):
-            return True
+            # incomplete cases
+            # 1. no results in Beard area, Mustache, Sideburns, or Bald
+            # 2. not clean shaven but no results in Beard length
+            if sum(confidences[length[0]:length[1]]) == 0 or sum(confidences[length[2]:length[3]]) == 0 \
+                    or sum(confidences[length[3]:length[4]]) == 0 or sum(confidences[length[4]:length[5]]) == 0 \
+                    or (sum(confidences[length[1]:length[2]]) == 0 and confidences[0] == 0):
+                return True
 
-        # impossible label combinations
-        # 1. Clean Shaven + Beard length
-        # 2. Clean Shaven + Mustache is connected to beard
-        # 3. Clean Shaven + Sideburns is connected to beard
-        # 4. Chin area + Sideburns is connected to beard
-        # 5. Bald (top and sides or sides only) + having sideburns (Sideburns present, Sideburns is connected to beard)
-        # 6. More than two choices on Mustache, Sideburns, and Bald
-        # 7. More than two choices on Beard area and Beard length except Info not Vis
-        # 8. Mustache is connected to beard + no beard (Clean Shaven, Info not Vis)
-        # 9. Sideburns is connected to beard + not side to side
-        elif (confidences[0] == 1 and sum(confidences[length[1]:length[2]]) != 0) or \
-                (confidences[0] == 1 and confidences[11] == 1) or \
-                (confidences[0] == 1 and confidences[15] == 1) or \
-                (confidences[1] == 1 and confidences[15] == 1) or \
-                (sum(confidences[19:21]) == 1 and sum(confidences[14:16]) != 0) or \
-                (sum(confidences[9:13]) > 1) or \
-                (sum(confidences[13:17]) > 1) or \
-                (sum(confidences[17:22]) > 1) or \
-                (sum(confidences[0:3]) > 1) or \
-                (confidences[0] == 0 and sum(confidences[4:8]) > 1) or \
-                (confidences[11] == 1 and sum(confidences[1:3]) == 0) or \
-                (confidences[15] == 1 and confidences[2] == 0):
-            return True
-        return False
+            # impossible label combinations
+            # 1. Clean Shaven + Beard length
+            # 2. Clean Shaven + Mustache is connected to beard
+            # 3. Clean Shaven + Sideburns is connected to beard
+            # 4. Chin area + Sideburns is connected to beard
+            # 5. Bald (top and sides or sides only) + having sideburns (Sideburns present, Sideburns is connected to beard)
+            # 6. More than two choices on Mustache, Sideburns, and Bald
+            # 7. More than two choices on Beard area and Beard length except Info not Vis
+            # 8. Mustache is connected to beard + no beard (Clean Shaven, Info not Vis)
+            # 9. Sideburns is connected to beard + not side to side
+            elif (confidences[0] == 1 and sum(confidences[length[1]:length[2]]) != 0) or \
+                    (confidences[0] == 1 and confidences[11] == 1) or \
+                    (confidences[0] == 1 and confidences[15] == 1) or \
+                    (confidences[1] == 1 and confidences[15] == 1) or \
+                    (sum(confidences[19:21]) == 1 and sum(confidences[14:16]) != 0) or \
+                    (sum(confidences[9:13]) > 1) or \
+                    (sum(confidences[13:17]) > 1) or \
+                    (sum(confidences[17:22]) > 1) or \
+                    (sum(confidences[0:3]) > 1) or \
+                    (confidences[0] == 0 and sum(confidences[4:8]) > 1) or \
+                    (confidences[11] == 1 and sum(confidences[1:3]) == 0) or \
+                    (confidences[15] == 1 and confidences[2] == 0):
+                return True
+            return False
+        else:
+            # 1. No beard + (5 o'clock shadow, goatee, mustache)
+            if confidences[24] == 1 and sum(confidences[([0, 16, 22])]) > 0:
+                return True
+            # 2. Bangs + Receding hairline
+            if confidences[5] == 1 and confidences[28] == 1:
+                return True
+            # 3. Bald + (Bangs, Receding hairline, wearing hat)
+            if confidences[4] == 1 and sum(confidences[([5, 28, 35])]) > 0:
+                return True
+            # 4. female + (5 o'clock shadow, goatee, mustache, having beard)
+            if confidences[20] == 0 and (sum(confidences[([0, 16, 22])]) > 0 or confidences[24] == 0):
+                return True
+            return False
 
     def _result_printer(self,
                         num_correct,
@@ -211,11 +247,11 @@ class Test:
         dict = {}
 
         for i in range(len(CLASS_LIST)):
-            print(f"{CLASS_LIST[i]}: {round(float(accs[i]), 2)}\t\t"
+            print(f"{CLASS_LIST[i]}: {round(float((n_accs[i] + p_accs[i])/2), 2)}\t\t"
                   f"Negative acc: {round(float(n_accs[i]), 2)}/{num_n_total[i]}\t\t"
                   f"Positive acc: {round(float(p_accs[i]), 2)}/{num_p_total[i]}")
             if self.config.save_p_n_acc:
-                dict[CLASS_LIST[i]] = [round(float(accs[i]), 2),
+                dict[CLASS_LIST[i]] = [round(float((n_accs[i] + p_accs[i])/2), 2),
                                        round(float(n_accs[i]), 2),
                                        int(num_n_total[i]),
                                        round(float(p_accs[i]), 2),
@@ -243,7 +279,8 @@ class Test:
                           self.config.group_head_tail_indexes[i]:self.config.group_head_tail_indexes[i + 1]]
             incomplete_positions = torch.where(torch.sum(sub_results, 1) == 0)[0]
             if i == 1:
-                incomplete_positions = incomplete_positions[torch.where(binary_results[incomplete_positions, 0] == 0)[0]]
+                incomplete_positions = incomplete_positions[
+                    torch.where(binary_results[incomplete_positions, 0] == 0)[0]]
             binary_results[:, self.config.group_head_tail_indexes[i]:self.config.group_head_tail_indexes[i + 1]] = \
                 self._result_compensation(sub_confidence, sub_results, incomplete_positions)
         return binary_results
@@ -261,6 +298,9 @@ if __name__ == '__main__':
     )
 
     # self.config.model and training parameters
+    parser.add_argument(
+        "--dataset", "-dataset", help="which dataset.", type=str, default="fh37k"
+    )
     parser.add_argument(
         "--test_im_path", "-i", help="path of test folder.", type=str, default=None
     )
