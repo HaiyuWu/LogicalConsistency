@@ -7,6 +7,32 @@
   <figcaption>Figure 1: We provide richer descriptions on facial hair that covers Beard Area, Beard Length, Mustache, Sideburns, and Bald. We first consider the logical consistency of the predictions for multi-label classification task.</figcaption>
 </figure>
 
+## Import Performance Update
+### Accuracy
+
+| Methods         | $Acc_{avg}$ | $Acc^{n}_{avg}$ | $Acc^{p}_{avg}$ |
+| :-------------- | :---------: | :-------------: | :-------------: |
+| BCE$^*$         |    91.16    |      94.71      |      68.00      |
+| BCE-MOON$^*$    |    89.24    |      91.01      |      80.96      |
+| BF$^*$          |    90.19    |      97.38      |      51.2       |
+| BCE+LCP$^*$     |             |                 |                 |
+|                 |             |                 |                 |
+| BCE$^*$         |    57.79    |      58.95      |      47.05      |
+| BCE-MOON$^*$    |    49.58    |      50.53      |      34.84      |
+| BF$^*$          |    23.38    |      23.91      |      18.63      |
+| BCE+LCP$^*$     |             |                 |                 |
+|                 |             |                 |                 |
+| BCE+LC$^*$      |    85.98    |      88.30      |      67.76      |
+| BCE-MOON+LC$^*$ |    52.32    |      53.40      |      36.46      |
+| BF+LC$^*$       |    90.48    |      93.19      |      67.33      |
+| BCE+LCP+LC$^*$  |             |                 |                 |
+
+
+
+### Logical Consistency
+
+
+
 ## TL;DR
 This repository provides a facial hair dataset, FH37K, which describes the facial hair in Area, Length, Connectedness dimensions. In addition, a method that can force the model to make predictions logical. See details below.
 
